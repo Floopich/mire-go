@@ -1,3 +1,3 @@
 module github.com/floopich/mire-go
 
-go 1.22
+go 1.24
