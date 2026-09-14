@@ -1,0 +1,10 @@
+{
+  "id": "generique",
+  "name": "Operateur non calibre",
+  "region": "",
+  "default_modem_url": "http://192.168.0.1",
+  "expected_models": [],
+  "calibrated": false,
+  "notes": "Aucun seuil n'a ete calibre pour cet operateur. Les relevés sont collectes et l'historique est conserve, mais l'etat de la ligne n'est pas qualifie : afficher un verdict fonde sur les tolerances d'un autre reseau serait trompeur, et d'autant plus dangereux qu'il aurait l'air fiable.",
+  "thresholds": {}
+}
