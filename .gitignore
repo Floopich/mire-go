@@ -1,0 +1,16 @@
+# Binaires compiles
+/mire-collector
+/dist/
+*.exe
+
+# Donnees locales
+*.db
+*.db-wal
+*.db-shm
+/data/
+
+# Outils
+.idea/
+.vscode/
+.claude/
+CLAUDE.md
