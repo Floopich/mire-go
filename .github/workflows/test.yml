@@ -30,5 +30,20 @@ jobs:
       - name: Analyse statique
         run: go vet ./...
 
-      - name: Tests
+      - name: Tests (pilote cgo)
         run: go test -race ./...
+
+      # Les binaires distribues sont compiles en Go pur : si seule la variante
+      # cgo etait testee, une regression du pilote ne se verrait qu'apres la
+      # publication.
+      - name: Tests (pilote Go pur)
+        run: go test -tags purego ./...
+
+      - name: Compilation croisee du binaire distribue
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          for cible in linux/arm64 linux/arm linux/amd64; do
+            GOOS="${cible%/*}" GOARCH="${cible#*/}" \
+              go build -tags purego ./... || exit 1
+          done

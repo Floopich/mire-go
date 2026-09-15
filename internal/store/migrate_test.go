@@ -5,13 +5,11 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func openTemp(t *testing.T) *sql.DB {
 	t.Helper()
-	db, err := sql.Open("sqlite3", filepath.Join(t.TempDir(), "test.db"))
+	db, err := sql.Open(driverName, filepath.Join(t.TempDir(), "test.db"))
 	if err != nil {
 		t.Fatalf("ouverture: %v", err)
 	}
