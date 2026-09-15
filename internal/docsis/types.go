@@ -173,3 +173,33 @@ func snr(mse string) *float64 {
 	}
 	return v
 }
+
+// FlexFloat accepte un nombre ecrit en nombre ou en chaine, avec ou sans unite.
+//
+// Le firmware melange les deux : "PowerLevel": 1.5 dans une table, "1.5" dans
+// une autre, parfois "650 MHz". Un decodage strict rejetterait le releve entier.
+type FlexFloat float64
+
+func (f *FlexFloat) UnmarshalJSON(data []byte) error {
+	data = bytes.TrimSpace(data)
+	if len(data) == 0 || string(data) == "null" {
+		*f = 0
+		return nil
+	}
+	if data[0] == '"' {
+		var s string
+		if err := json.Unmarshal(data, &s); err != nil {
+			return err
+		}
+		if v := ParseNumber(s); v != nil {
+			*f = FlexFloat(*v)
+		}
+		return nil
+	}
+	var v float64
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	*f = FlexFloat(v)
+	return nil
+}
