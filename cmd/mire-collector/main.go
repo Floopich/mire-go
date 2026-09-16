@@ -17,6 +17,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/floopich/mire-go/internal/cli"
 	"github.com/floopich/mire-go/internal/collect"
 	"github.com/floopich/mire-go/internal/modem"
 	"github.com/floopich/mire-go/internal/operator"
@@ -40,15 +41,28 @@ func run() error {
 		retention = flag.Int("retention", store.DefaultRetention.Days, "conservation en jours, 0 pour illimite")
 		maxGB     = flag.Float64("taille-max", 5, "plafond de la base en Go, 0 pour illimite")
 		once      = flag.Bool("une-fois", false, "prendre un seul releve et sortir")
+		showPass  = flag.Bool("mot-de-passe-visible", false, "afficher le mot de passe pendant la saisie")
 		verbose   = flag.Bool("verbeux", false, "journaliser chaque releve")
 	)
 	flag.Parse()
 
-	// Le mot de passe ne passe pas par la ligne de commande : elle est lisible
-	// par tout utilisateur de la machine via /proc.
+	// Le mot de passe ne passe jamais par la ligne de commande : elle est
+	// lisible par tout utilisateur de la machine via /proc, et reste dans
+	// l'historique du shell. La variable d'environnement sert au service, la
+	// saisie interactive a l'installation.
 	password := os.Getenv("MIRE_MODEM_PASSWORD")
 	if password == "" {
-		return errors.New("definir MIRE_MODEM_PASSWORD avec le mot de passe du modem")
+		if !cli.IsTerminal(os.Stdin) {
+			return errors.New("definir MIRE_MODEM_PASSWORD avec le mot de passe du modem")
+		}
+		saisi, err := cli.ReadPassword("Mot de passe du modem : ", !*showPass)
+		if err != nil {
+			return err
+		}
+		password = strings.TrimSpace(saisi)
+		if password == "" {
+			return errors.New("mot de passe vide")
+		}
 	}
 
 	level := slog.LevelInfo

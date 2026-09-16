@@ -10,7 +10,7 @@ func TestVooPorteLesSeuilsDeTerrain(t *testing.T) {
 	if !p.Calibrated {
 		t.Error("le profil VOO doit etre marque calibre")
 	}
-	if p.DefaultModemURL != "http://192.168.0.1" {
+	if p.DefaultModemURL != "http://192.168.100.1" {
 		t.Errorf("adresse par defaut: %q", p.DefaultModemURL)
 	}
 

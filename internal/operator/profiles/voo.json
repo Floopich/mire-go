@@ -2,35 +2,159 @@
   "id": "voo",
   "name": "VOO",
   "region": "Belgique",
-  "default_modem_url": "http://192.168.0.1",
-  "expected_models": ["Technicolor CGA4233"],
+  "default_modem_url": "http://192.168.100.1",
+  "expected_models": [
+    "Technicolor CGA4233"
+  ],
   "calibrated": true,
   "source": "https://forum.voo.be",
-  "notes": "Valeurs empiriques issues des retours de la communaute et des experts VOO, non normatives. En pratique VOO la voie retour n'a pas de borne basse significative : seul un TX excessif pose probleme, normal sous 49 dBmV, 51 est le plafond sur 4 porteuses, les canaux tombent au-dela de 52. La plage bonne en voie descendante est elargie a +/-8 dBmV, la pratique VOO considerant 8 a 10 dBmV comme non problematique. Les bornes OFDM du SNR s'appuient sur CableLabs DOCSIS 3.1 PHY CM-SP-PHYv3.1-I08 : VOO ne publie pas de plancher de MER agrege, et sans ces lignes un canal OFDM serait juge sur le plancher de 40 dB du 4096QAM alors que son MER agrege se mesure autrement. Les tolerances varient selon la zone : un segment ancien ou charge peut rester dans les tolerances de l'operateur avec des valeurs que ce profil signale. Un canal montant durablement en 16QAM peut relever de la configuration du segment plutot que d'une degradation : comparer l'historique avant de conclure, un canal qui descend en 16QAM n'a pas le meme sens qu'un canal qui y est depuis l'installation.",
+  "notes": "192.168.100.1 est l'adresse de diagnostic DOCSIS imposee par la specification : c'est elle qui sert la page des canaux, joignable que le modem soit en bridge ou en routeur. 192.168.0.1 est l'adresse d'administration du routeur chez VOO, Hey et Orange ; 192.168.1.1 chez Proximus, Scarlet et Viking Mobile. La decouverte automatique essaie les trois. Valeurs empiriques issues des retours de la communaute et des experts VOO, non normatives. En pratique VOO la voie retour n'a pas de borne basse significative : seul un TX excessif pose probleme, normal sous 49 dBmV, 51 est le plafond sur 4 porteuses, les canaux tombent au-dela de 52. La plage bonne en voie descendante est elargie a +/-8 dBmV, la pratique VOO considerant 8 a 10 dBmV comme non problematique. Les bornes OFDM du SNR s'appuient sur CableLabs DOCSIS 3.1 PHY CM-SP-PHYv3.1-I08 : VOO ne publie pas de plancher de MER agrege, et sans ces lignes un canal OFDM serait juge sur le plancher de 40 dB du 4096QAM alors que son MER agrege se mesure autrement. Les tolerances varient selon la zone : un segment ancien ou charge peut rester dans les tolerances de l'operateur avec des valeurs que ce profil signale. Un canal montant durablement en 16QAM peut relever de la configuration du segment plutot que d'une degradation : comparer l'historique avant de conclure, un canal qui descend en 16QAM n'a pas le meme sens qu'un canal qui y est depuis l'installation.",
   "thresholds": {
     "downstream_default": "256QAM",
     "downstream_power": {
-      "64QAM":   {"good": {"min": -8, "max": 8}, "warning": {"min": -10, "max": 10}, "critical": {"min": -15, "max": 15}},
-      "256QAM":  {"good": {"min": -8, "max": 8}, "warning": {"min": -10, "max": 10}, "critical": {"min": -15, "max": 15}},
-      "1024QAM": {"good": {"min": -8, "max": 8}, "warning": {"min": -10, "max": 10}, "critical": {"min": -15, "max": 15}},
-      "4096QAM": {"good": {"min": -8, "max": 8}, "warning": {"min": -10, "max": 10}, "critical": {"min": -15, "max": 15}},
-      "ofdm":    {"good": {"min": -8, "max": 8}, "warning": {"min": -10, "max": 10}, "critical": {"min": -15, "max": 15}}
+      "64QAM": {
+        "good": {
+          "min": -8,
+          "max": 8
+        },
+        "warning": {
+          "min": -10,
+          "max": 10
+        },
+        "critical": {
+          "min": -15,
+          "max": 15
+        }
+      },
+      "256QAM": {
+        "good": {
+          "min": -8,
+          "max": 8
+        },
+        "warning": {
+          "min": -10,
+          "max": 10
+        },
+        "critical": {
+          "min": -15,
+          "max": 15
+        }
+      },
+      "1024QAM": {
+        "good": {
+          "min": -8,
+          "max": 8
+        },
+        "warning": {
+          "min": -10,
+          "max": 10
+        },
+        "critical": {
+          "min": -15,
+          "max": 15
+        }
+      },
+      "4096QAM": {
+        "good": {
+          "min": -8,
+          "max": 8
+        },
+        "warning": {
+          "min": -10,
+          "max": 10
+        },
+        "critical": {
+          "min": -15,
+          "max": 15
+        }
+      },
+      "ofdm": {
+        "good": {
+          "min": -8,
+          "max": 8
+        },
+        "warning": {
+          "min": -10,
+          "max": 10
+        },
+        "critical": {
+          "min": -15,
+          "max": 15
+        }
+      }
     },
     "upstream_default": "sc_qam",
     "upstream_power": {
-      "sc_qam": {"good": {"min": 30, "max": 49}, "warning": {"min": 27, "max": 51}, "critical": {"min": 25, "max": 52}},
-      "ofdma":  {"good": {"min": 30, "max": 49}, "warning": {"min": 27, "max": 51}, "critical": {"min": 25, "max": 52}}
+      "sc_qam": {
+        "good": {
+          "min": 30,
+          "max": 49
+        },
+        "warning": {
+          "min": 27,
+          "max": 51
+        },
+        "critical": {
+          "min": 25,
+          "max": 52
+        }
+      },
+      "ofdma": {
+        "good": {
+          "min": 30,
+          "max": 49
+        },
+        "warning": {
+          "min": 27,
+          "max": 51
+        },
+        "critical": {
+          "min": 25,
+          "max": 52
+        }
+      }
     },
     "snr_default": "256QAM",
     "snr": {
-      "64QAM":   {"good_min": 27, "warning_min": 25,   "critical_min": 24},
-      "256QAM":  {"good_min": 35, "warning_min": 33,   "critical_min": 30},
-      "1024QAM": {"good_min": 39, "warning_min": 37,   "critical_min": 36},
-      "4096QAM": {"good_min": 40, "warning_min": 38,   "critical_min": 36},
-      "ofdm":    {"good_min": 27, "warning_min": 25.5, "critical_min": 24.5}
+      "64QAM": {
+        "good_min": 27,
+        "warning_min": 25,
+        "critical_min": 24
+      },
+      "256QAM": {
+        "good_min": 35,
+        "warning_min": 33,
+        "critical_min": 30
+      },
+      "1024QAM": {
+        "good_min": 39,
+        "warning_min": 37,
+        "critical_min": 36
+      },
+      "4096QAM": {
+        "good_min": 40,
+        "warning_min": 38,
+        "critical_min": 36
+      },
+      "ofdm": {
+        "good_min": 27,
+        "warning_min": 25.5,
+        "critical_min": 24.5
+      }
     },
-    "upstream_modulation": {"critical_max_qam": 4, "warning_max_qam": 16},
-    "upstream_ofdma": {"critical_max_qam": 32, "warning_max_qam": 64, "tolerated_max_qam": 128},
-    "errors": {"uncorrectable_pct_warning": 1, "uncorrectable_pct_critical": 3, "spike_expiry_hours": 48}
+    "upstream_modulation": {
+      "critical_max_qam": 4,
+      "warning_max_qam": 16
+    },
+    "upstream_ofdma": {
+      "critical_max_qam": 32,
+      "warning_max_qam": 64,
+      "tolerated_max_qam": 128
+    },
+    "errors": {
+      "uncorrectable_pct_warning": 1,
+      "uncorrectable_pct_critical": 3,
+      "spike_expiry_hours": 48
+    }
   }
 }
