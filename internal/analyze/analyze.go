@@ -70,16 +70,36 @@ type Health struct {
 	Qualified  bool // false si le profil n'est pas calibre
 }
 
-// Snapshot analyse un releve.
+// Options porte les declarations de l'abonne sur son installation.
+type Options struct {
+	// OFDMALowQAMExpected declare que le segment fonctionne en basse
+	// modulation OFDMA par conception. Sans cette declaration, un segment
+	// configure ainsi depuis l'installation produirait une alerte permanente
+	// qu'aucune intervention ne ferait disparaitre.
+	OFDMALowQAMExpected bool
+}
+
+// Snapshot analyse un releve avec les options par defaut.
+func Snapshot(snap docsis.Snapshot, profile operator.Profile) Health {
+	return SnapshotWith(snap, profile, Options{})
+}
+
+// SnapshotWith analyse un releve.
 //
 // Un profil non calibre ne produit aucun verdict : appliquer les tolerances
 // d'un autre reseau donnerait un resultat faux avec l'apparence du serieux.
-func Snapshot(snap docsis.Snapshot, profile operator.Profile) Health {
+func SnapshotWith(snap docsis.Snapshot, profile operator.Profile, opts Options) Health {
 	h := Health{Qualified: profile.Calibrated}
 	if !profile.Calibrated {
 		return h
 	}
 	t := profile.Thresholds
+	if opts.OFDMALowQAMExpected {
+		// Le 16QAM et le 32QAM cessent d'etre des degradations pour devenir
+		// des ecarts toleres ; seules les modulations vraiment basses alertent.
+		t.UpstreamOFDMA.CriticalMaxQAM = 8
+		t.UpstreamOFDMA.WarningMaxQAM = 8
+	}
 	for _, c := range snap.Downstream {
 		ch := downstream(c, t)
 		h.Downstream = append(h.Downstream, ch)
@@ -116,16 +136,26 @@ func downstream(c docsis.Downstream, t operator.Thresholds) ChannelHealth {
 func upstream(c docsis.Upstream, t operator.Thresholds) ChannelHealth {
 	out := ChannelHealth{ChannelID: c.ChannelID}
 
-	if bands, ok := t.UpstreamPowerFor(kind(c.Modulation)); ok && c.PowerDBmV != nil {
+	family := kind(c.Modulation)
+	if family != "ofdma" && kind(c.Multiplex) == "ofdma" {
+		family = "ofdma"
+	}
+	if bands, ok := t.UpstreamPowerFor(family); ok && c.PowerDBmV != nil {
 		f := power(*c.PowerDBmV, bands, "puissance montante")
 		out.Findings = append(out.Findings, f)
 		out.Level = worst(out.Level, f.Level)
 	}
 	limits := t.UpstreamModulation
-	if kind(c.Modulation) == "ofdma" {
+	label := c.Modulation
+	if kind(c.Modulation) == "ofdma" || kind(c.Multiplex) == "ofdma" {
 		limits = t.UpstreamOFDMA
+		// Un canal OFDMA porte "OFDMA" en modulation ; son ordre reel est
+		// celui du profil actif, que le pilote range dans Multiplex.
+		if qamOrder(c.Multiplex) > 0 {
+			label = c.Multiplex
+		}
 	}
-	if f, ok := modulation(c.Modulation, limits); ok {
+	if f, ok := modulation(label, limits); ok {
 		out.Findings = append(out.Findings, f)
 		out.Level = worst(out.Level, f.Level)
 	}

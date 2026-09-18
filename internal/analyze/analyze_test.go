@@ -180,3 +180,45 @@ func TestOFDMAMontantBasResteBon(t *testing.T) {
 		}
 	}
 }
+
+func TestOFDMABasQAMSignalePaDefaut(t *testing.T) {
+	// Sans declaration, un OFDMA a 16QAM est une degradation.
+	h := Snapshot(releve(nil, []docsis.RawUpstream{
+		{ChannelID: 5, Modulation: "OFDMA", Multiplex: "16QAM", PowerLevel: "45.0"},
+	}), profilVOO(t))
+	if h.Level != Critical {
+		t.Errorf("16QAM OFDMA sans declaration: %s, attendu critique", h.Level)
+	}
+}
+
+func TestSegmentDeclareEnBasseModulationNAlertePlus(t *testing.T) {
+	// Interrupteur active : le segment est configure ainsi, l'abonne ne doit
+	// pas voir une alerte permanente qu'aucune intervention ne leverait.
+	opts := Options{OFDMALowQAMExpected: true}
+	for _, m := range []string{"16QAM", "32QAM"} {
+		h := SnapshotWith(releve(nil, []docsis.RawUpstream{
+			{ChannelID: 5, Modulation: "OFDMA", Multiplex: m, PowerLevel: "45.0"},
+		}), profilVOO(t), opts)
+		if h.Level != Tolerated {
+			t.Errorf("%s declare attendu: %s, attendu tolere", m, h.Level)
+		}
+	}
+	// Une modulation vraiment basse continue d'alerter.
+	h := SnapshotWith(releve(nil, []docsis.RawUpstream{
+		{ChannelID: 5, Modulation: "OFDMA", Multiplex: "8QAM", PowerLevel: "45.0"},
+	}), profilVOO(t), opts)
+	if h.Level != Critical {
+		t.Errorf("8QAM declare: %s, attendu critique", h.Level)
+	}
+}
+
+func TestLaDeclarationNeTouchePasLeSCQAM(t *testing.T) {
+	// L'interrupteur ne concerne que l'OFDMA : un SC-QAM a 16QAM reste un
+	// avertissement.
+	h := SnapshotWith(releve(nil, []docsis.RawUpstream{
+		{ChannelID: 1, Modulation: "16QAM", PowerLevel: "45.0"},
+	}), profilVOO(t), Options{OFDMALowQAMExpected: true})
+	if h.Level != Warning {
+		t.Errorf("SC-QAM 16QAM: %s, attendu avertissement", h.Level)
+	}
+}

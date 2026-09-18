@@ -83,7 +83,9 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	// Le verdict porte sur le dernier releve complet : qualifier des valeurs
 	// venant de releves differents melangerait des instants distincts.
 	if snap, err := store.LatestSnapshot(ctx, s.db); err == nil {
-		data.Health = analyze.Snapshot(snap, s.profile)
+		data.Health = analyze.SnapshotWith(snap, s.profile, analyze.Options{
+			OFDMALowQAMExpected: store.BoolSetting(ctx, s.db, store.KeyOFDMALowQAMExpected, false),
+		})
 	}
 	s.render(w, r, data)
 }
