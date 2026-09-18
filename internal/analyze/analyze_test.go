@@ -166,3 +166,17 @@ func TestLePireCanalDetermineLeVerdictGlobal(t *testing.T) {
 		t.Error("le canal sain ne doit pas etre degrade par son voisin")
 	}
 }
+
+func TestOFDMAMontantBasResteBon(t *testing.T) {
+	// Releve reel : 30,2 dBmV sur l'OFDMA montant. Avec une borne basse a 30,
+	// deux dixiemes de moins auraient suffi a declencher un avertissement sur
+	// une ligne saine.
+	for _, p := range []string{"30.2", "29.0", "28.5"} {
+		h := Snapshot(releve(nil,
+			[]docsis.RawUpstream{{ChannelID: 5, Modulation: "OFDMA", PowerLevel: p}},
+		), profilVOO(t))
+		if h.Level != Good {
+			t.Errorf("%s dBmV: verdict %s, attendu bon", p, h.Level)
+		}
+	}
+}
