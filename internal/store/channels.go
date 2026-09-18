@@ -52,3 +52,30 @@ func ReadingCount(ctx context.Context, db *sql.DB) (int, error) {
 	err := db.QueryRowContext(ctx, `SELECT count(*) FROM readings`).Scan(&n)
 	return n, err
 }
+
+// UpstreamChannels liste les canaux montants vus sur la periode.
+func UpstreamChannels(ctx context.Context, db *sql.DB, since time.Time) ([]ChannelSummary, error) {
+	rows, err := db.QueryContext(ctx, `
+		SELECT c.channel_id, c.modulation, c.power_dbmv, c.ts
+		FROM us_channels c
+		JOIN (SELECT channel_id, max(ts) AS ts FROM us_channels
+		      WHERE ts >= ? GROUP BY channel_id) d
+		  ON c.channel_id = d.channel_id AND c.ts = d.ts
+		ORDER BY c.channel_id`, since.UTC().Unix())
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	var out []ChannelSummary
+	for rows.Next() {
+		var s ChannelSummary
+		var ts int64
+		if err := rows.Scan(&s.ChannelID, &s.Modulation, &s.Power, &ts); err != nil {
+			return nil, err
+		}
+		s.LastSeen = time.Unix(ts, 0).UTC()
+		out = append(out, s)
+	}
+	return out, rows.Err()
+}

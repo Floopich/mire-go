@@ -19,6 +19,11 @@ const pageHTML = `<!DOCTYPE html>
  .grid { stroke: var(--grille); stroke-width: 1; }
  .tick, .axis, .empty { font-size: 11px; fill: currentColor; opacity: .65; }
  .alerte { background: #c0392b22; padding: 8px; border-radius: 4px; }
+ .verdict { padding: 8px 12px; border-radius: 4px; margin-bottom: 14px; font-weight: 600; }
+ .bon { background: #27ae6022; } .tolere { background: #f39c1222; }
+ .avertissement { background: #e67e2233; } .critique { background: #c0392b33; }
+ .inconnu { background: #8883; }
+ h2 { font-size: 1.05rem; margin: 20px 0 6px; }
  nav { margin: 12px 0; font-size: .9rem; }
 </style></head><body>
 
@@ -38,8 +43,12 @@ const pageHTML = `<!DOCTYPE html>
  {{.SNRSVG}}
 {{else}}
  <h1>Relevés DOCSIS</h1>
- <p class="meta">Profil {{.Profile.Name}}{{if not .Profile.Calibrated}} — non calibré, l'état de la ligne n'est pas qualifié{{end}}
-   · {{.Readings}} relevés · dernier {{fmtTime .Latest}}</p>
+ <p class="meta">Profil {{.Profile.Name}} · {{.Readings}} relevés · dernier {{fmtTime .Latest}}</p>
+ {{if .Health.Qualified}}
+  <p class="verdict {{.Health.Level}}">Ligne : {{.Health.Level}}</p>
+ {{else}}
+  <p class="verdict inconnu">Profil non calibré — les relevés sont conservés, l'état de la ligne n'est pas qualifié.</p>
+ {{end}}
  <nav><a href="?heures=6">6 h</a> · <a href="?heures=24">24 h</a> ·
    <a href="?heures=168">7 j</a> · <a href="?heures=720">30 j</a></nav>
  {{if .Channels}}
@@ -52,5 +61,14 @@ const pageHTML = `<!DOCTYPE html>
    <td>{{fmtTime .LastSeen}}</td></tr>
  {{end}}</table>
  {{else}}<p>Aucun relevé sur la fenêtre choisie.</p>{{end}}
+
+ {{if .Upstream}}
+ <h2>Voie montante</h2>
+ <table><tr><th>Canal</th><th>Modulation</th><th>Puissance</th><th>Vu à</th></tr>
+ {{range .Upstream}}
+  <tr><td>{{.ChannelID}}</td><td>{{.Modulation}}</td>
+   <td>{{fmtValue .Power "dBmV"}}</td><td>{{fmtTime .LastSeen}}</td></tr>
+ {{end}}</table>
+ {{end}}
 {{end}}
 </body></html>`

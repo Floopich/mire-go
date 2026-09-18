@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/floopich/mire-go/internal/analyze"
 	"github.com/floopich/mire-go/internal/operator"
 	"github.com/floopich/mire-go/internal/store"
 )
@@ -40,7 +41,9 @@ type pageData struct {
 	Profile  operator.Profile
 	Readings int
 	Latest   time.Time
+	Health   analyze.Health
 	Channels []store.ChannelSummary
+	Upstream []store.ChannelSummary
 	Channel  *store.ChannelSummary
 	PowerSVG template.HTML
 	SNRSVG   template.HTML
@@ -68,6 +71,19 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 	data.Channels = channels
 	if len(channels) > 0 {
 		data.Latest = channels[0].LastSeen
+	}
+
+	montants, err := store.UpstreamChannels(ctx, s.db, since)
+	if err != nil {
+		s.fail(w, r, data, err)
+		return
+	}
+	data.Upstream = montants
+
+	// Le verdict porte sur le dernier releve complet : qualifier des valeurs
+	// venant de releves differents melangerait des instants distincts.
+	if snap, err := store.LatestSnapshot(ctx, s.db); err == nil {
+		data.Health = analyze.Snapshot(snap, s.profile)
 	}
 	s.render(w, r, data)
 }

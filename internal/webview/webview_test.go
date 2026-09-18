@@ -176,3 +176,13 @@ func TestLigneStableNEstPasRenduePlate(t *testing.T) {
 }
 
 func ptr(v float64) *float64 { return &v }
+
+func TestLeVerdictEtLaVoieMontanteSontAffiches(t *testing.T) {
+	body := get(t, serveur(t, baseRemplie(t, 5)), "/").Body.String()
+	if !strings.Contains(body, "Ligne :") {
+		t.Error("le verdict n'apparait pas")
+	}
+	if !strings.Contains(body, "Voie montante") {
+		t.Error("les canaux montants n'apparaissent pas")
+	}
+}
