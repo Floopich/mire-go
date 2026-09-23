@@ -2,6 +2,9 @@ package auth
 
 import (
 	"context"
+	"crypto/pbkdf2"
+	"crypto/sha256"
+	"encoding/base64"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -187,5 +190,28 @@ func TestLimiteurIsoleLesAdresses(t *testing.T) {
 	}
 	if l.Wait("10.0.0.2") != 0 {
 		t.Error("une adresse innocente est bloquee par une autre")
+	}
+}
+
+func TestUneAncienneEmpreinteResteVerifiable(t *testing.T) {
+	// Le nombre d'iterations est inscrit dans l'empreinte : relever la valeur
+	// par defaut ne doit jamais enfermer quelqu'un dehors. On verifie avec un
+	// compte volontairement different de celui du code.
+	salt := base64.RawStdEncoding.EncodeToString([]byte("0123456789abcdef"))
+	key, err := pbkdf2.Key(sha256.New, "mot-de-passe", []byte("0123456789abcdef"), 1000, 32)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ancienne := "pbkdf2-sha256$1000$" + salt + "$" +
+		base64.RawStdEncoding.EncodeToString(key)
+
+	ok, err := VerifyPassword("mot-de-passe", ancienne)
+	if err != nil || !ok {
+		t.Errorf("une empreinte a 1000 iterations doit rester verifiable: %v %v", ok, err)
+	}
+
+	neuve, _ := HashPassword("mot-de-passe")
+	if !strings.Contains(neuve, "$200000$") {
+		t.Errorf("la nouvelle empreinte devrait porter 200000 : %s", neuve)
 	}
 }

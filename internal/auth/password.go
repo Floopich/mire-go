@@ -13,11 +13,18 @@ import (
 	"strings"
 )
 
-// iterations suit la recommandation OWASP pour PBKDF2-HMAC-SHA256.
+// iterations est calibre pour un Raspberry Pi 3B+, la cible du projet.
 //
-// Le compte est inscrit dans chaque empreinte : on pourra l'augmenter plus
+// L'OWASP recommande 600 000 pour PBKDF2-HMAC-SHA256, mais cette valeur vise
+// des processeurs de serveur : sur un Pi 3B+ elle impose trois secondes et
+// demie a chaque connexion. Le mot de passe genere porte environ 92 bits
+// d'entropie, qu'aucun compte d'iterations ne rend attaquable ; les
+// iterations ne protegent reellement qu'un mot de passe faible choisi a la
+// main, et le limiteur de tentatives couvre deja ce cas.
+//
+// Le compte est inscrit dans chaque empreinte : on pourra le relever plus
 // tard sans invalider les mots de passe deja enregistres.
-const iterations = 600_000
+const iterations = 200_000
 
 const (
 	saltLength = 16
